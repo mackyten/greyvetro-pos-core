@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Greyvetro POS — HQ Dashboard</title>
+<style>
+  :root {
+    --bg: #F5F7FA;
+    --card: #FFFFFF;
+    --line: #E9ECF1;
+    --line-soft: #F1F3F7;
+    --ink: #141A21;
+    --ink-2: #5A6675;
+    --ink-3: #93A0B0;
+    --brand: #0E9F8E;
+    --brand-2: #14B8A6;
+    --brand-ink: #0B5D54;
+    --brand-wash: #E8F7F4;
+    --good: #16A34A;
+    --good-wash: #E7F6ED;
+    --warn: #E08600;
+    --warn-wash: #FCF1DD;
+    --bad: #DC2626;
+    --bad-wash: #FBE9E9;
+    --indigo: #5B6CF0;
+    --violet: #8B7BF0;
+    --shadow: 0 1px 2px rgba(20,26,33,.04), 0 6px 20px rgba(20,26,33,.05);
+    --shadow-lg: 0 2px 6px rgba(20,26,33,.06), 0 16px 40px rgba(20,26,33,.08);
+    --r: 16px;
+    font-synthesis: none;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.01em;
+  }
+  .app { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; }
+
+  /* ---------- Sidebar ---------- */
+  .side { background: #0E1721; color: #C4D0DC; padding: 22px 16px; display: flex; flex-direction: column; gap: 4px; }
+  .brand { display: flex; align-items: center; gap: 11px; padding: 6px 10px 22px; }
+  .brand .mark { width: 34px; height: 34px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--brand-2), var(--brand)); display: grid; place-items: center;
+    box-shadow: 0 6px 16px rgba(20,184,166,.4); }
+  .brand .mark svg { width: 19px; height: 19px; }
+  .brand .name { font-weight: 700; font-size: 16px; color: #fff; letter-spacing: -0.02em; }
+  .brand .name small { display: block; font-weight: 500; font-size: 11px; color: #6E7E8E; letter-spacing: 0; margin-top: 1px; }
+  .nav-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: .09em; color: #5B6B7B; padding: 16px 12px 6px; font-weight: 600; }
+  .nav { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; font-size: 13.5px; font-weight: 500; color: #AEBCC9; cursor: pointer; }
+  .nav svg { width: 17px; height: 17px; opacity: .85; }
+  .nav:hover { background: rgba(255,255,255,.04); color: #E6EDF3; }
+  .nav.active { background: linear-gradient(90deg, rgba(20,184,166,.18), rgba(20,184,166,.04)); color: #fff; box-shadow: inset 2px 0 0 var(--brand-2); }
+  .nav.active svg { opacity: 1; color: var(--brand-2); }
+  .side .spacer { flex: 1; }
+  .side .me { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; background: rgba(255,255,255,.04); }
+  .side .me .av { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg,#5B6CF0,#8B7BF0); display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 13px; }
+  .side .me .t { font-size: 12.5px; }
+  .side .me .t b { color: #fff; font-weight: 600; display: block; }
+  .side .me .t span { color: #6E7E8E; font-size: 11px; }
+
+  /* ---------- Main ---------- */
+  .main { padding: 22px 28px 32px; overflow: hidden; }
+  .topbar { display: flex; align-items: center; gap: 16px; margin-bottom: 22px; }
+  .topbar .greet h1 { font-size: 21px; font-weight: 700; letter-spacing: -0.03em; }
+  .topbar .greet p { font-size: 13px; color: var(--ink-2); margin-top: 2px; }
+  .topbar .spacer { flex: 1; }
+  .pillset { display: inline-flex; background: var(--card); border: 1px solid var(--line); border-radius: 11px; padding: 3px; box-shadow: var(--shadow); }
+  .pillset button { border: 0; background: transparent; font: inherit; font-size: 12.5px; font-weight: 600; color: var(--ink-2); padding: 7px 14px; border-radius: 8px; cursor: pointer; letter-spacing: -0.01em; }
+  .pillset button.on { background: var(--ink); color: #fff; }
+  .selector { display: inline-flex; align-items: center; gap: 9px; background: var(--card); border: 1px solid var(--line); border-radius: 11px; padding: 9px 13px; font-size: 12.5px; font-weight: 600; box-shadow: var(--shadow); cursor: pointer; }
+  .selector .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--brand); box-shadow: 0 0 0 3px var(--brand-wash); }
+  .selector svg { width: 14px; height: 14px; color: var(--ink-3); }
+
+  .row { display: grid; gap: 18px; }
+  .kpis { grid-template-columns: repeat(4, 1fr); margin-bottom: 18px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); }
+  .kpi { padding: 17px 18px; position: relative; overflow: hidden; }
+  .kpi .lbl { font-size: 12px; color: var(--ink-2); font-weight: 600; display: flex; align-items: center; gap: 7px; }
+  .kpi .lbl .ic { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; }
+  .kpi .ic svg { width: 14px; height: 14px; }
+  .kpi .val { font-size: 27px; font-weight: 750; letter-spacing: -0.035em; margin: 12px 0 7px; }
+  .kpi .val small { font-size: 16px; font-weight: 650; color: var(--ink-3); }
+  .chip { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
+  .chip.up { background: var(--good-wash); color: var(--good); }
+  .chip.dn { background: var(--bad-wash); color: var(--bad); }
+  .chip.warn { background: var(--warn-wash); color: var(--warn); }
+  .chip svg { width: 11px; height: 11px; }
+  .kpi .sub { font-size: 11.5px; color: var(--ink-3); margin-left: 7px; }
+  .spark { position: absolute; right: 14px; bottom: 14px; width: 78px; height: 30px; opacity: .9; }
+
+  .grid-main { grid-template-columns: 1.62fr 1fr; align-items: start; }
+  .panel-h { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px 12px; }
+  .panel-h h3 { font-size: 14.5px; font-weight: 700; letter-spacing: -0.02em; }
+  .panel-h .meta { font-size: 11.5px; color: var(--ink-3); font-weight: 500; }
+  .legend { display: inline-flex; gap: 13px; font-size: 11.5px; color: var(--ink-2); font-weight: 600; }
+  .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 5px; vertical-align: middle; }
+
+  /* trend chart */
+  .chartwrap { padding: 4px 10px 14px; }
+  .chart { width: 100%; height: 184px; display: block; }
+  .ylab { font-size: 10px; fill: var(--ink-3); font-weight: 600; }
+  .xlab { font-size: 10.5px; fill: var(--ink-3); font-weight: 600; }
+
+  /* stores */
+  .stores { padding: 6px 18px 18px; display: flex; flex-direction: column; gap: 13px; }
+  .store { display: grid; grid-template-columns: 116px 1fr 62px; align-items: center; gap: 12px; }
+  .store .nm { font-size: 12.5px; font-weight: 600; }
+  .store .nm span { display: block; font-size: 10.5px; color: var(--ink-3); font-weight: 500; }
+  .bar { height: 9px; background: var(--line-soft); border-radius: 6px; overflow: hidden; }
+  .bar i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--brand-2), var(--brand)); }
+  .store .amt { font-size: 12.5px; font-weight: 700; text-align: right; letter-spacing: -0.02em; }
+
+  /* AI insights */
+  .ai { background: linear-gradient(180deg, #FFFFFF, #FBFCFE); }
+  .ai .panel-h .tag { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 700; color: var(--brand-ink); background: var(--brand-wash); padding: 4px 9px; border-radius: 20px; }
+  .ai .panel-h .tag svg { width: 12px; height: 12px; }
+  .alert { display: flex; gap: 12px; padding: 13px 18px; border-top: 1px solid var(--line-soft); }
+  .alert .ai-ic { width: 30px; height: 30px; border-radius: 9px; flex: none; display: grid; place-items: center; }
+  .alert .ai-ic svg { width: 15px; height: 15px; }
+  .alert .bd { flex: 1; }
+  .alert .bd .t { font-size: 12.8px; font-weight: 650; letter-spacing: -0.01em; }
+  .alert .bd .d { font-size: 11.8px; color: var(--ink-2); margin-top: 2px; line-height: 1.45; }
+  .alert .bd .act { font-size: 11.5px; font-weight: 700; color: var(--brand); margin-top: 6px; display: inline-block; }
+  .sev-red { background: var(--bad-wash); color: var(--bad); }
+  .sev-amber { background: var(--warn-wash); color: var(--warn); }
+  .sev-teal { background: var(--brand-wash); color: var(--brand); }
+
+  /* donut + items shared bottom */
+  .grid-bottom { grid-template-columns: 1fr 1fr 1.25fr; margin-top: 18px; }
+  .donut-card { padding-bottom: 16px; }
+  .donut { width: 132px; height: 132px; border-radius: 50%;
+    background: conic-gradient(var(--brand) 0 46%, var(--indigo) 46% 74%, var(--violet) 74% 100%);
+    margin: 6px auto 14px; display: grid; place-items: center; position: relative; }
+  .donut::after { content: ""; width: 86px; height: 86px; border-radius: 50%; background: var(--card); box-shadow: inset 0 0 0 1px var(--line-soft); }
+  .donut .ctr { position: absolute; text-align: center; }
+  .donut .ctr b { font-size: 19px; font-weight: 750; letter-spacing: -0.03em; }
+  .donut .ctr span { font-size: 10.5px; color: var(--ink-3); font-weight: 600; display: block; }
+  .blist { padding: 0 18px; display: flex; flex-direction: column; gap: 9px; }
+  .blist .b { display: flex; align-items: center; gap: 9px; font-size: 12px; font-weight: 600; }
+  .blist .b i { width: 9px; height: 9px; border-radius: 3px; }
+  .blist .b span { color: var(--ink-3); margin-left: auto; font-weight: 700; }
+
+  .items { padding: 4px 18px 16px; display: flex; flex-direction: column; }
+  .item { display: grid; grid-template-columns: 22px 1fr auto; align-items: center; gap: 11px; padding: 9px 0; border-top: 1px solid var(--line-soft); }
+  .item:first-child { border-top: 0; }
+  .item .rk { font-size: 11px; font-weight: 800; color: var(--ink-3); text-align: center; }
+  .item .nm { font-size: 12.8px; font-weight: 600; }
+  .item .nm span { display: block; font-size: 10.5px; color: var(--ink-3); font-weight: 500; }
+  .item .qty { font-size: 12.5px; font-weight: 700; text-align: right; }
+  .item .qty span { display: block; font-size: 10.5px; color: var(--good); font-weight: 700; }
+
+  /* compliance strip */
+  .compliance { padding: 14px 18px 16px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .cmp { display: flex; align-items: center; gap: 11px; }
+  .cmp .ci { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; flex: none; }
+  .cmp .ci svg { width: 17px; height: 17px; }
+  .cmp .ct b { font-size: 13px; font-weight: 700; display: block; letter-spacing: -0.01em; }
+  .cmp .ct span { font-size: 11px; color: var(--ink-2); }
+  .ok { background: var(--good-wash); color: var(--good); }
+  .tl { background: var(--brand-wash); color: var(--brand); }
+  .am { background: var(--warn-wash); color: var(--warn); }
+  .dot-live { width: 7px; height: 7px; border-radius: 50%; background: var(--good); display: inline-block; margin-right: 5px; box-shadow: 0 0 0 3px var(--good-wash); }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="side">
+    <div class="brand">
+      <div class="mark">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 2 4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6l-8-4Z" fill="#fff" opacity=".95"/><path d="M9 12l2 2 4-4.5" stroke="#0E9F8E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="name">Greyvetro<small>POS · HQ Console</small></div>
+    </div>
+
+    <div class="nav active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+      Dashboard
+    </div>
+    <div class="nav">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l5-5 4 3 6-7" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 8h3v3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Sales &amp; Reports
+    </div>
+    <div class="nav">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7l8-4 8 4-8 4-8-4Z" stroke-linejoin="round"/><path d="M4 7v8l8 4 8-4V7" stroke-linejoin="round"/></svg>
+      Inventory &amp; Cost
+    </div>
+    <div class="nav">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5" stroke-linecap="round"/><path d="M17 8h4M19 6v4" stroke-linecap="round"/></svg>
+      Workforce
+    </div>
+    <div class="nav">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-7-10a7 7 0 0 1 14 0c0 5.5-7 10-7 10Z" stroke-linejoin="round"/><circle cx="12" cy="11" r="2.5"/></svg>
+      Loyalty &amp; CRM
+    </div>
+
+    <div class="nav-label">Governance</div>
+    <div class="nav">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6l7-3Z" stroke-linejoin="round"/></svg>
+      BIR Compliance
+    </div>
+    <div class="nav">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16M4 12h16M4 19h10" stroke-linecap="round"/></svg>
+      Audit Trail
+    </div>
+
+    <div class="spacer"></div>
+    <div class="me">
+      <div class="av">MA</div>
+      <div class="t"><b>M. Angelo</b><span>Group Operations</span></div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="topbar">
+      <div class="greet">
+        <h1>Good morning, Angelo 👋</h1>
+        <p>Here's how your group is performing today — Thursday, June 5, 2026</p>
+      </div>
+      <div class="spacer"></div>
+      <div class="selector"><span class="dot"></span> All Brands · 12 Stores
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="pillset">
+        <button class="on">Today</button>
+        <button>Week</button>
+        <button>Month</button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="row kpis">
+      <div class="card kpi">
+        <div class="lbl"><span class="ic" style="background:var(--brand-wash);color:var(--brand)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke-linecap="round"/></svg></span> Net Sales</div>
+        <div class="val">₱486,200</div>
+        <span class="chip up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 15l7-7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg> 8.2%</span>
+        <span class="sub">vs last Thu</span>
+        <svg class="spark" viewBox="0 0 78 30" preserveAspectRatio="none"><polyline points="0,24 11,20 22,22 33,14 44,16 55,9 66,11 78,4" fill="none" stroke="#14B8A6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="card kpi">
+        <div class="lbl"><span class="ic" style="background:var(--warn-wash);color:var(--warn)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7l8-4 8 4-8 4-8-4Z" stroke-linejoin="round"/><path d="M4 7v8l8 4 8-4V7" stroke-linejoin="round"/></svg></span> Food Cost</div>
+        <div class="val">31.2<small>%</small></div>
+        <span class="chip warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 15l7-7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg> 1.2pts</span>
+        <span class="sub">target 30%</span>
+        <svg class="spark" viewBox="0 0 78 30" preserveAspectRatio="none"><polyline points="0,18 11,16 22,19 33,15 44,17 55,12 66,14 78,9" fill="none" stroke="#E08600" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="card kpi">
+        <div class="lbl"><span class="ic" style="background:var(--good-wash);color:var(--good)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5" stroke-linecap="round"/></svg></span> Labor %</div>
+        <div class="val">24.8<small>%</small></div>
+        <span class="chip up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> on target</span>
+        <span class="sub">target 25%</span>
+        <svg class="spark" viewBox="0 0 78 30" preserveAspectRatio="none"><polyline points="0,12 11,14 22,11 33,15 44,13 55,16 66,14 78,17" fill="none" stroke="#16A34A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="card kpi">
+        <div class="lbl"><span class="ic" style="background:#EEF0FE;color:var(--indigo)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18M3 7l2 12h14l2-12M8 7V5a4 4 0 0 1 8 0v2" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Avg Check</div>
+        <div class="val">₱438</div>
+        <span class="chip up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 15l7-7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg> 4.1%</span>
+        <span class="sub">1,110 txns</span>
+        <svg class="spark" viewBox="0 0 78 30" preserveAspectRatio="none"><polyline points="0,20 11,18 22,15 33,17 44,12 55,13 66,8 78,7" fill="none" stroke="#5B6CF0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+
+    <!-- Main grid -->
+    <div class="row grid-main">
+      <div style="display:flex;flex-direction:column;gap:18px">
+        <!-- Trend -->
+        <div class="card">
+          <div class="panel-h">
+            <h3>Sales Trend</h3>
+            <span class="legend"><span><i style="background:var(--brand)"></i>This week</span><span><i style="background:#CBD5E1"></i>Last week</span></span>
+          </div>
+          <div class="chartwrap">
+            <svg class="chart" viewBox="0 0 720 184" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="fill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#14B8A6" stop-opacity=".22"/>
+                  <stop offset="1" stop-color="#14B8A6" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <!-- grid -->
+              <g stroke="#EEF1F5" stroke-width="1">
+                <line x1="40" y1="20" x2="710" y2="20"/>
+                <line x1="40" y1="60" x2="710" y2="60"/>
+                <line x1="40" y1="100" x2="710" y2="100"/>
+                <line x1="40" y1="140" x2="710" y2="140"/>
+              </g>
+              <g class="ylab" text-anchor="end">
+                <text x="32" y="24">₱90k</text><text x="32" y="64">₱60k</text><text x="32" y="104">₱30k</text><text x="32" y="144">₱0</text>
+              </g>
+              <!-- last week (muted) -->
+              <polyline points="60,118 153,112 246,120 339,96 432,104 525,88 650,100" fill="none" stroke="#CBD5E1" stroke-width="2.5" stroke-dasharray="5 5" stroke-linecap="round" stroke-linejoin="round"/>
+              <!-- this week area + line -->
+              <path d="M60,110 L153,96 L246,104 L339,72 L432,80 L525,46 L650,58 L650,150 L60,150 Z" fill="url(#fill)"/>
+              <polyline points="60,110 153,96 246,104 339,72 432,80 525,46 650,58" fill="none" stroke="#0E9F8E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <g fill="#0E9F8E"><circle cx="525" cy="46" r="4.5" fill="#fff" stroke="#0E9F8E" stroke-width="3"/></g>
+              <g class="xlab" text-anchor="middle">
+                <text x="60" y="172">Mon</text><text x="153" y="172">Tue</text><text x="246" y="172">Wed</text><text x="339" y="172">Thu</text><text x="432" y="172">Fri</text><text x="525" y="172">Sat</text><text x="650" y="172">Sun</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Stores -->
+        <div class="card">
+          <div class="panel-h"><h3>Sales by Store</h3><span class="meta">Top 6 · live</span></div>
+          <div class="stores">
+            <div class="store"><div class="nm">BGC Flagship<span>Sizzle House</span></div><div class="bar"><i style="width:100%"></i></div><div class="amt">₱68.4k</div></div>
+            <div class="store"><div class="nm">Makati Ayala<span>Sizzle House</span></div><div class="bar"><i style="width:86%"></i></div><div class="amt">₱59.1k</div></div>
+            <div class="store"><div class="nm">Ortigas East<span>Lutong Bahay</span></div><div class="bar"><i style="width:74%"></i></div><div class="amt">₱50.6k</div></div>
+            <div class="store"><div class="nm">Cebu IT Park<span>Kape &amp; Co.</span></div><div class="bar"><i style="width:61%"></i></div><div class="amt">₱41.8k</div></div>
+            <div class="store"><div class="nm">Iloilo Megaworld<span>Lutong Bahay</span></div><div class="bar"><i style="width:52%"></i></div><div class="amt">₱35.2k</div></div>
+            <div class="store"><div class="nm">Davao Abreeza<span>Kape &amp; Co.</span></div><div class="bar"><i style="width:44%"></i></div><div class="amt">₱29.9k</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI insights -->
+      <div class="card ai">
+        <div class="panel-h">
+          <h3>AI Insights</h3>
+          <span class="tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.8 4.6L18 9l-4.2 1.4L12 15l-1.8-4.6L6 9l4.2-1.4L12 3Z" stroke-linejoin="round"/></svg> Live</span>
+        </div>
+        <div class="alert">
+          <div class="ai-ic sev-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 16H3L12 3Z" stroke-linejoin="round"/><path d="M12 10v4M12 17h.01" stroke-linecap="round"/></svg></div>
+          <div class="bd">
+            <div class="t">Void anomaly · BGC Flagship</div>
+            <div class="d">Cashier #4 void rate is <b>+3σ</b> above peers after items fired to kitchen. Possible served-but-voided loss.</div>
+            <span class="act">Review audit trail →</span>
+          </div>
+        </div>
+        <div class="alert">
+          <div class="ai-ic sev-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 15a4 4 0 0 0 4 4h10a4 4 0 0 0 1-7.9A6 6 0 0 0 6 9" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 13l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="bd">
+            <div class="t">Weather → demand shift · Makati</div>
+            <div class="d">Rain forecast at lunch. Cut prep <b>−15%</b> on grilled items; shift staffing toward delivery.</div>
+            <span class="act">Apply to prep sheet →</span>
+          </div>
+        </div>
+        <div class="alert">
+          <div class="ai-ic sev-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l5-5 4 3 6-7" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 8h3v3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="bd">
+            <div class="t">Upsell opportunity · group-wide</div>
+            <div class="d">Calamansi juice (high margin, heavy stock) attached on only <b>9%</b> of rice meals. Prompt cashiers.</div>
+            <span class="act">Enable co-pilot prompt →</span>
+          </div>
+        </div>
+        <div class="alert">
+          <div class="ai-ic sev-teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 21V7l7-4 7 4v14" stroke-linejoin="round"/><path d="M9 21v-6h6v6" stroke-linejoin="round"/></svg></div>
+          <div class="bd">
+            <div class="t">Stockout risk · Cebu IT Park</div>
+            <div class="d">Chicken projected to run out by <b>Sat</b> at current pace. Draft transfer from commissary.</div>
+            <span class="act">Draft transfer slip →</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom grid -->
+    <div class="row grid-bottom">
+      <!-- brand mix -->
+      <div class="card donut-card">
+        <div class="panel-h"><h3>Brand Mix</h3></div>
+        <div class="donut"><div class="ctr"><b>₱486k</b><span>net today</span></div></div>
+        <div class="blist">
+          <div class="b"><i style="background:var(--brand)"></i> Sizzle House <span>46%</span></div>
+          <div class="b"><i style="background:var(--indigo)"></i> Lutong Bahay <span>28%</span></div>
+          <div class="b"><i style="background:var(--violet)"></i> Kape &amp; Co. <span>26%</span></div>
+        </div>
+      </div>
+
+      <!-- top items -->
+      <div class="card">
+        <div class="panel-h"><h3>Top Items</h3><span class="meta">by units</span></div>
+        <div class="items">
+          <div class="item"><div class="rk">1</div><div class="nm">Pork Sisig<span>Sizzle House</span></div><div class="qty">312<span>★ star</span></div></div>
+          <div class="item"><div class="rk">2</div><div class="nm">Chicken Adobo Meal<span>Lutong Bahay</span></div><div class="qty">288<span>★ star</span></div></div>
+          <div class="item"><div class="rk">3</div><div class="nm">Iced Spanish Latte<span>Kape &amp; Co.</span></div><div class="qty">241</div></div>
+          <div class="item"><div class="rk">4</div><div class="nm">Pancit Canton<span>Lutong Bahay</span></div><div class="qty">196</div></div>
+          <div class="item"><div class="rk">5</div><div class="nm">Lechon Kawali<span>Sizzle House</span></div><div class="qty">154</div></div>
+        </div>
+      </div>
+
+      <!-- compliance & audit -->
+      <div class="card">
+        <div class="panel-h"><h3>Compliance &amp; Audit</h3><span class="meta"><span class="dot-live"></span>real-time</span></div>
+        <div class="compliance">
+          <div class="cmp"><div class="ci ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ct"><b>1,110 / 1,110</b><span>BIR EIS transmitted</span></div></div>
+          <div class="cmp"><div class="ci ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12h8M12 8v8" stroke-linecap="round"/></svg></div><div class="ct"><b>12 / 12 stores</b><span>Z-reading sequence intact</span></div></div>
+          <div class="cmp"><div class="ci tl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2" stroke-linecap="round"/></svg></div><div class="ct"><b>₱42,180</b><span>Svc charge pool · RA 11360</span></div></div>
+          <div class="cmp"><div class="ci am"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 16H3L12 3Z" stroke-linejoin="round"/><path d="M12 10v4M12 17h.01" stroke-linecap="round"/></svg></div><div class="ct"><b>1 flagged</b><span>Void anomaly · investigating</span></div></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

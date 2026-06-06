@@ -1,0 +1,44 @@
+name: Deploy POS Core
+
+on:
+  push:
+    branches: [main]
+
+env:
+  NAMESPACE: greyvetro
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AKS credentials
+        uses: azure/aks-set-context@v4
+        with:
+          resource-group: ${{ secrets.AKS_RESOURCE_GROUP }}
+          cluster-name: ${{ secrets.AKS_CLUSTER_NAME }}
+          creds: ${{ secrets.AKS_CREDENTIALS }}
+
+      - name: Build and push images
+        uses: docker/build-push-action@v6
+        with:
+          context: backend
+          push: true
+          tags: greyvetro/pos-core-backend:${{ github.sha }}
+
+      - name: Create client secret
+        run: |
+          kubectl create secret generic pos-core-secrets \
+            --from-literal=client-secret=${{ secrets.POS_CORE_CLIENT_SECRET }} \
+            --namespace=$NAMESPACE \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Deploy
+        run: |
+          kubectl set image deployment/pos-core-backend \
+            backend=greyvetro/pos-core-backend:${{ github.sha }} \
+            --namespace=$NAMESPACE
+
+      - name: Apply k8s resources
+        run: kubectl apply -f k8s/
